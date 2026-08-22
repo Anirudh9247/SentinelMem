@@ -2,29 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
-
 import numpy as np
 
+from sentinelmem.models import MemoryRecord, Query
 
-@dataclass(frozen=True)
-class MemoryRecord:
-    """A single memory record with provenance metadata used by the benchmark."""
-
-    record_id: str
-    text: str
-    label: str
-    provenance: str
-
-
-@dataclass(frozen=True)
-class QueryCase:
-    """A retrieval query and the label counted as an unsafe retrieval."""
-
-    query_id: str
-    text: str
-    unsafe_label: str
+# Backward compatibility alias
+QueryCase = Query
 
 
 def deterministic_embedding(text: str, dimension: int) -> np.ndarray:

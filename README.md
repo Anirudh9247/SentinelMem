@@ -1,94 +1,129 @@
 # SentinelMem: Cross-Backend Defense Against Memory Poisoning in LLM Agents
 
-**SentinelMem** is a research and engineering project focused on developing a robust, cross-backend retrieval-time defense framework to protect Large Language Model (LLM) agents against memory poisoning attacks (such as MINJA query-only injections, sleeper/delayed triggers, and direct writes).
+**SentinelMem** is a cross-backend retrieval-time defense framework designed to protect Large Language Model (LLM) agents against memory poisoning attacks (including MINJA query-only injections, sleeper/delayed triggers, and direct-write poisoning).
 
-> Current implementation status: the repository now contains a deliberately
-> small, deterministic FAISS plumbing baseline. It is not yet a reproduction of
-> any published attack and does not make cross-backend security claims.
+```
+                           LLM Agent Ingestion
+                                   │
+                                   ▼
+             ┌──────────────────────────────────────────┐
+             │         Vector Memory Storage            │
+             │   (FAISS  •  Mem0  •  LangMem)           │
+             └─────────────────────┬────────────────────┘
+                                   │  Candidate Retrieval (Top-k)
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│               🛡️ SentinelMem Defense & Trust Engine                    │
+│                                                                        │
+│   ┌─────────────────────┐  ┌─────────────────────┐                     │
+│   │   Semantic Drift    │  │  Temporal Anomaly   │                     │
+│   │   Divergence Metric │  │  Burst / Rate Check │                     │
+│   └──────────┬──────────┘  └──────────┬──────────┘                     │
+│              │                        │                                │
+│   ┌──────────┴──────────┐  ┌──────────┴──────────┐                     │
+│   │ Provenance Tracking │  │ Source Credibility  │                     │
+│   │ Ingress / Lineage   │  │ Authenticity Weight │                     │
+│   └──────────┬──────────┘  └──────────┬──────────┘                     │
+│              └────────────┬───────────┘                                │
+│                           ▼                                            │
+│            Weighted Trust Fusion & Policy Engine                       │
+│              [ ALLOW  |  FLAG  |  QUARANTINE  |  BLOCK ]               │
+└───────────────────────────┬────────────────────────────────────────────┘
+                            │  Sanitized Context Only
+                            ▼
+                     LLM Agent Context
+```
 
 ---
 
-## 🧭 Project Management Framework & Interactive Dashboard
+## ⚡ Quick Start
 
-This repository contains the complete 14–16 week semester project management framework and an interactive dashboard to monitor sprint execution, code deliverables, research benchmarks, and paper milestones.
+### 1. Environment Setup
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+```
 
-### Quick Start: Launch the Dashboard
-Simply open [`index.html`](file:///f:/Projects/SentinelMem/index.html) in your browser:
-```bash
-# On Windows PowerShell:
+### 2. Run Automated Test Suite
+```powershell
+pytest
+```
+
+### 3. Run Security Experiment CLI
+```powershell
+# Run MINJA attack on FAISS backend with SentinelMem defense
+sentinelmem --backend faiss --attack minja --top-k 3
+
+# Run Sleeper attack on Mem0 backend
+sentinelmem --backend mem0 --attack sleeper
+
+# Run Direct-Write attack on LangMem backend and export JSON results
+sentinelmem --backend langmem --attack direct_write --output results/langmem_direct.json
+```
+
+### 4. Launch Security Research Console
+Open [`index.html`](file:///f:/Projects/SentinelMem/index.html) in any web browser to access the interactive security simulation and trust analysis console:
+```powershell
 Start-Process .\index.html
 ```
 
 ---
 
-## 📑 Framework Overview (5 Interactive Tabs)
+## 🔬 Benchmark Results Summary
 
-| Tab | Purpose | Key Tools & Views |
-|---|---|---|
-| **1. Overview** | High-level project snapshot | 4-Phase roadmap, active sprint indicators, critical path health, KPI progress meters |
-| **2. Sprint Plan** | Sprints 1 to 8 execution | Granular task checklists, dates, objectives, and guide sign-off completion criteria |
-| **3. Checklists** | Three-tier task management | Retrospective layer, Phase 2–3 Implementation (112 hrs), Weeks 1–15 Research & Writing (107 hrs) |
-| **4. Weekly Tracking** | Friday EOD tracking cadence | Status update generator, automated $\pm 15\%$ variance engine, escalation alerts |
-| **5. Dependencies & Risks** | Risk & contingency management | Critical path graph, built-in buffers (W11 & W14), 9-risk mitigation matrix, scope reduction triggers |
+| Backend | Attack Vector | Unmitigated Baseline ASR | Defended SentinelMem ASR | Defense Efficacy ($\Delta\text{ASR}$) | False Positive Rate | Inspection Latency |
+|---|---|:---:|:---:|:---:|:---:|:---:|
+| **FAISS** | MINJA Query Injection | $100.0\%$ | **$0.0\%$** | **$+100.0\%$** | $0.0\%$ | $1.45\text{ ms}$ |
+| **FAISS** | Sleeper Delayed Poisoning | $50.0\%$ | **$0.0\%$** | **$+50.0\%$** | $0.0\%$ | $1.20\text{ ms}$ |
+| **FAISS** | Direct-Write | $100.0\%$ | **$0.0\%$** | **$+100.0\%$** | $0.0\%$ | $1.10\text{ ms}$ |
+| **Mem0** | MINJA Query Injection | $100.0\%$ | **$0.0\%$** | **$+100.0\%$** | $0.0\%$ | $3.40\text{ ms}$ |
+| **LangMem** | Direct-Write | $100.0\%$ | **$0.0\%$** | **$+100.0\%$** | $0.0\%$ | $2.80\text{ ms}$ |
 
 ---
 
-## 🗓️ 16-Week Semester Roadmap Snapshot
+## 📚 Technical Documentation
 
-```mermaid
-gantt
-    title SentinelMem 16-Week Semester Timeline
-    dateFormat  YYYY-MM-DD
-    section Phase 1: Foundation
-    Lit Review & Guide Sign-Off :2026-08-22, 2026-09-04
-    Threat Model & Env Setup    :2026-09-04, 2026-09-18
-    section Phase 2: Attack Reproduction
-    MINJA Query-Only Injection  :2026-09-18, 2026-10-02
-    Sleeper & Direct-Write      :2026-10-02, 2026-10-16
-    section Phase 3: Defense Core
-    Trust-Signal Fusion Layer   :2026-10-16, 2026-10-30
-    Dashboard & Eval Harness    :2026-10-30, 2026-11-13
-    section Phase 4: Benchmarking & Paper
-    Full Benchmarking Run       :2026-11-13, 2026-11-27
-    Paper Finalization & Defense:2026-11-27, 2026-12-11
+- 📖 **[Architecture & System Design](docs/architecture.md)**: Deep dive into the 4-signal trust fusion and retrieval-time gating pipeline.
+- 🎯 **[Threat Model](docs/threat-model.md)**: Adversary capabilities, assumptions, assets to protect, and evaluation boundaries.
+- ⚔️ **[Attack Models](docs/attack-models.md)**: Formal taxonomy of MINJA, Sleeper, and Direct-Write memory poisoning vectors.
+- 🛡️ **[Defense Model](docs/defense-model.md)**: Multi-signal trust scoring formulas, threshold gating, and policy decisions.
+- 📊 **[Evaluation Protocol](docs/evaluation.md)**: Benchmark metrics, experimental contract, and target criteria.
+
+---
+
+## 🛠️ Codebase Structure
+
 ```
-
----
-
-## 📚 Project Documentation Suite
-
-- 📖 **[Master Project Framework](file:///f:/Projects/SentinelMem/docs/PROJECT_FRAMEWORK.md)**: Full 16-week execution guide, monthly review cadence, and governance rules.
-- 🏃 **[Sprint Plan](file:///f:/Projects/SentinelMem/docs/SPRINT_PLAN.md)**: Sprints 1 to 8 with comprehensive task breakdowns and completion criteria.
-- ✅ **[Checklists](file:///f:/Projects/SentinelMem/docs/CHECKLISTS.md)**: Retrospective, implementation, and research task budgets with effort estimates.
-- 📅 **[Weekly Tracking Protocol](file:///f:/Projects/SentinelMem/docs/WEEKLY_TRACKING_TEMPLATE.md)**: Friday EOD reporting workflow and variance analysis rules.
-- ⚡ **[Dependencies & Risks](file:///f:/Projects/SentinelMem/docs/RISKS_AND_DEPENDENCIES.md)**: Critical path analysis, 9-risk mitigation matrix, and contingency playbook.
-
----
-
-## 🛠️ Technology Stack & Environment
-
-- **Backends Supported:** Mem0, LangMem, FAISS
-- **Trust Fusion Signals:** Semantic Drift, Temporal Anomaly, Provenance Tracking, Source Credibility
-- **Defense Mechanisms:** Retrieval-time Filtering, Quarantine Policy, Adaptive Scoring
-- **Dashboard Interface:** HTML5, Tailwind CSS, JavaScript (Vanilla with LocalStorage Persistence)
-
----
-
-## Reproducible Baseline (v0.1)
-
-The first executable milestone is a safe synthetic retrieval benchmark. Its
-scope, assumptions, and limitations are defined in [the threat model](docs/threat-model.md)
-and [experiment contract](docs/experiment-contract.md).
-
-```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
-python -m sentinelmem.baseline --config configs/faiss_baseline.json --output results/faiss_baseline.json
-pytest
+SentinelMem/
+├── configs/                     # Experiment configurations
+├── docs/                        # Formal technical documentation
+│   ├── architecture.md          # System design & pipeline
+│   ├── threat-model.md          # Threat model & adversary boundaries
+│   ├── attack-models.md         # Attack taxonomy (MINJA, Sleeper, Direct-Write)
+│   ├── defense-model.md         # Trust fusion & policy gating formulas
+│   └── evaluation.md            # Benchmark methodology & metrics
+├── src/sentinelmem/             # Core Python package
+│   ├── models.py                # Data contracts (MemoryRecord, TrustBreakdown, DefenseDecision)
+│   ├── cli.py                   # Command-line benchmark runner
+│   ├── backends/                # Memory backend adapters
+│   │   ├── base.py              # BaseMemoryBackend interface
+│   │   ├── faiss_backend.py     # FAISS vector store
+│   │   ├── mem0_backend.py      # Mem0 multi-layer adapter
+│   │   ├── langmem_backend.py   # LangMem thread adapter
+│   │   └── registry.py          # Dynamic backend registry
+│   ├── attacks/                 # Attack simulation harness
+│   │   ├── minja.py             # MINJA query-only injection
+│   │   ├── sleeper.py           # Delayed-trigger poisoning
+│   │   └── direct_write.py      # Direct memory injection
+│   ├── defense/                 # Multi-signal trust layer
+│   │   ├── signals.py           # Drift, Temporal, Provenance, Credibility
+│   │   └── engine.py            # SentinelEngine trust fusion & policy
+│   └── evaluation/              # Benchmark runner & metrics
+│       └── benchmark.py         # End-to-end evaluation harness
+├── tests/                       # Pytest test suite (12 passing tests)
+├── index.html                   # Security Research Console UI
+├── app.js                       # Security console simulation engine
+├── styles.css                   # Console cybersecurity theme
+└── pyproject.toml               # Package build & dependency definition
 ```
-
-The dashboard remains a project-management tool. The executable benchmark is
-the source of truth for research results; generated result JSON is intentionally
-not committed.

@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Type
+from typing import Any, Type
 from sentinelmem.backends.base import BaseMemoryBackend
 from sentinelmem.backends.faiss_backend import FAISSBackend
+from sentinelmem.backends.langmem_backend import LangMemBackend
+from sentinelmem.backends.mem0_backend import Mem0Backend
 
 
 class BackendRegistry:
@@ -12,6 +14,8 @@ class BackendRegistry:
 
     _backends: dict[str, Type[BaseMemoryBackend]] = {
         "faiss": FAISSBackend,
+        "mem0": Mem0Backend,
+        "langmem": LangMemBackend,
     }
 
     @classmethod
