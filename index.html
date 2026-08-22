@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SentinelMem — Project Management & Sprint Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-[#0b0f19] text-gray-100 antialiased min-h-screen flex flex-col selection:bg-cyan-500 selection:text-white">
+
+  <!-- Top Navigation / Header -->
+  <header class="border-b border-gray-800 bg-[#0e1424]/90 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      
+      <!-- Brand & Project Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-cyan-900/40 text-lg">
+          🛡️
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">SentinelMem</h1>
+            <span class="px-2 py-0.5 text-[11px] font-semibold bg-cyan-950 text-cyan-300 border border-cyan-700/50 rounded">14–16 Wk Framework</span>
+          </div>
+          <p class="text-xs text-gray-400 font-medium truncate max-w-xl">
+            Cross-Backend Defense Against Memory Poisoning in LLM Agents (Aug 22 – Dec 11)
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons (Backup, Print, Reset) -->
+      <div class="flex items-center flex-wrap gap-2 no-print">
+        <button onclick="exportStateJSON()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-gray-200 rounded-lg border border-gray-700 transition-colors flex items-center gap-1.5" title="Export progress backup as JSON file">
+          <span>💾</span>
+          <span>Backup JSON</span>
+        </button>
+
+        <label class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-gray-200 rounded-lg border border-gray-700 transition-colors cursor-pointer flex items-center gap-1.5" title="Import previously saved JSON backup">
+          <span>📂</span>
+          <span>Import JSON</span>
+          <input type="file" accept=".json" class="hidden" onchange="importStateJSON(event)">
+        </label>
+
+        <button onclick="window.print()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-gray-200 rounded-lg border border-gray-700 transition-colors flex items-center gap-1.5" title="Print or save executive summary as PDF">
+          <span>🖨️</span>
+          <span>Print / PDF</span>
+        </button>
+
+        <button onclick="resetState()" class="px-2.5 py-1.5 bg-gray-900 hover:bg-rose-950/60 text-xs font-semibold text-gray-400 hover:text-rose-300 rounded-lg border border-gray-800 hover:border-rose-800 transition-colors" title="Reset dashboard to default template values">
+          <span>↺</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- 5 Tab Bar -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-800/60 flex items-center overflow-x-auto space-x-1 sm:space-x-2 py-1.5 no-print">
+      <button onclick="switchTab('overview')" data-tab="overview" class="tab-btn active px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-md text-gray-300 hover:text-white transition-all flex items-center gap-2">
+        <span>📊 Overview</span>
+      </button>
+
+      <button onclick="switchTab('sprints')" data-tab="sprints" class="tab-btn px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-md text-gray-300 hover:text-white transition-all flex items-center gap-2">
+        <span>🏃 Sprint Plan (1–8)</span>
+      </button>
+
+      <button onclick="switchTab('checklists')" data-tab="checklists" class="tab-btn px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-md text-gray-300 hover:text-white transition-all flex items-center gap-2">
+        <span>✅ 3-Tier Checklists</span>
+      </button>
+
+      <button onclick="switchTab('weekly')" data-tab="weekly" class="tab-btn px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-md text-gray-300 hover:text-white transition-all flex items-center gap-2">
+        <span>📅 Weekly Tracking</span>
+      </button>
+
+      <button onclick="switchTab('risks')" data-tab="risks" class="tab-btn px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-md text-gray-300 hover:text-white transition-all flex items-center gap-2">
+        <span>⚡ Dependencies & Risks</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Viewport -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    
+    <!-- Tab 1: Overview -->
+    <section id="tab-overview" class="tab-pane">
+      <div id="overview-container"></div>
+    </section>
+
+    <!-- Tab 2: Sprint Plan -->
+    <section id="tab-sprints" class="tab-pane hidden">
+      <div id="sprints-container"></div>
+    </section>
+
+    <!-- Tab 3: Checklists -->
+    <section id="tab-checklists" class="tab-pane hidden">
+      <div id="checklists-container"></div>
+    </section>
+
+    <!-- Tab 4: Weekly Tracking -->
+    <section id="tab-weekly" class="tab-pane hidden">
+      <div id="weekly-container"></div>
+    </section>
+
+    <!-- Tab 5: Dependencies & Risks -->
+    <section id="tab-risks" class="tab-pane hidden">
+      <div id="risks-container"></div>
+    </section>
+
+  </main>
+
+  <!-- Friday EOD Modal Form -->
+  <div id="weekly-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
+    <div class="bg-gray-900 border border-gray-700 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-800">
+        <div>
+          <h3 class="text-base font-bold text-white">Log Friday EOD Status Update</h3>
+          <p class="text-xs text-gray-400">Record weekly progress, variance, and early risk flags.</p>
+        </div>
+        <button onclick="closeWeeklyModal()" class="text-gray-400 hover:text-white text-lg font-bold">&times;</button>
+      </div>
+
+      <form onsubmit="submitWeeklyForm(event)" class="mt-4 space-y-4 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-gray-300 font-semibold mb-1">Week Number (1–16)</label>
+            <input type="number" id="input-week-num" min="1" max="16" value="1" required class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500 font-mono">
+          </div>
+          <div>
+            <label class="block text-gray-300 font-semibold mb-1">Date</label>
+            <input type="date" id="input-date" required class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500 font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-gray-300 font-semibold mb-1">Planned Hours This Week</label>
+            <input type="number" id="input-planned-hrs" min="0" step="0.5" value="15" required class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500 font-mono">
+          </div>
+          <div>
+            <label class="block text-gray-300 font-semibold mb-1">Actual Hours Spent</label>
+            <input type="number" id="input-actual-hrs" min="0" step="0.5" value="14" required class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500 font-mono">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1">Completed This Week (Bullet points)</label>
+          <textarea id="input-completed" rows="3" placeholder="• Item 1 (on track)&#10;• Item 2" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1">Blockers or Issues</label>
+          <textarea id="input-blockers" rows="2" placeholder="• Issue and impact description" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1">Risks Flagged & Mitigations</label>
+          <textarea id="input-risks" rows="2" placeholder="• Identified risk & mitigation strategy" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1">Next Week's Priorities</label>
+          <textarea id="input-priorities" rows="2" placeholder="• Priority 1&#10;• Priority 2" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-gray-300 font-semibold mb-1">Attack Success (Mem0)</label>
+            <input type="text" id="input-attack-success" placeholder="e.g. 98.2%" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500 font-mono">
+          </div>
+          <div>
+            <label class="block text-gray-300 font-semibold mb-1">Defense Efficacy</label>
+            <input type="text" id="input-defense-efficacy" placeholder="e.g. 94.5%" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500 font-mono">
+          </div>
+          <div>
+            <label class="block text-gray-300 font-semibold mb-1">Lines of Code</label>
+            <input type="text" id="input-loc" placeholder="e.g. 1,450" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-cyan-500 font-mono">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-800">
+          <button type="button" onclick="closeWeeklyModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded font-semibold transition-colors">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-semibold transition-colors">Save Weekly Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-800 py-6 bg-[#090d15] text-xs text-gray-400 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3">
+      <div>
+        <span class="font-bold text-gray-200">SentinelMem</span> — Cross-Backend Defense Against Memory Poisoning in LLM Agents.
+      </div>
+      <div class="flex items-center gap-4 text-gray-400">
+        <span>14–16 Week Semester Lifecycle</span>
+        <span>•</span>
+        <span>Adaptive Sprint Management</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
