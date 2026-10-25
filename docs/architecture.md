@@ -1,79 +1,47 @@
-# SentinelMem Architecture & System Design
+# SentinelMem architecture and implementation status
 
-SentinelMem is a cross-backend retrieval-time defense framework designed to protect Large Language Model (LLM) agents against memory poisoning attacks.
+SentinelMem is a synthetic research prototype. The only connected vector backend is local FAISS; Mem0 and LangMem remain explicitly named emulations. No LLM agent is connected.
 
-```
-                           LLM Agent Query & Ingestion
-                                       │
-                                       ▼
-                   ┌───────────────────────────────────────┐
-                   │          Memory Backend Store         │
-                   │   [ FAISS  •  Mem0  •  LangMem ]      │
-                   └───────────────────┬───────────────────┘
-                                       │  Candidate Retrieval (Top-k)
-                                       ▼
-    ┌──────────────────────────────────────────────────────────────────────┐
-    │                🛡️ SentinelMem Trust & Defense Engine                 │
-    │                                                                      │
-    │  ┌───────────────────────┐              ┌─────────────────────────┐  │
-    │  │     Semantic Drift    │              │    Temporal Anomaly     │  │
-    │  │ Divergence & Distance │              │ Burst & Rate Detection  │  │
-    │  └───────────┬───────────┘              └────────────┬────────────┘  │
-    │              │                                       │               │
-    │  ┌───────────┴───────────┐              ┌────────────┴────────────┐  │
-    │  │  Provenance Integrity │              │   Source Credibility    │  │
-    │  │ Lineage & Ingress Id  │              │ Weight & Verification   │  │
-    │  └───────────┬───────────┘              └────────────┬────────────┘  │
-    │              └───────────────────┬───────────────────┘               │
-    │                                  ▼                                   │
-    │                 Weighted Trust Score Fusion                          │
-    │               TrustScore = ∑ (w_i · S_i) ∈ [0, 1]                    │
-    │                                  │                                   │
-    │                                  ▼                                   │
-    │                     Policy Enforcement Layer                         │
-    │              [ ALLOW | FLAG | QUARANTINE | BLOCK ]                   │
-    └──────────────────────────────────┬───────────────────────────────────┘
-                                       │  Sanitized Context Only
-                                       ▼
-                              LLM Agent Context
+## Current data flow
+
+```text
+Synthetic records and queries
+        │
+        ├── HashEmbedder (fixture only)
+        └── Pinned SentenceTransformerEmbedder (local inference)
+                    │
+                    ▼
+          FAISSBackend / MemoryBackend
+                    │
+          optional SQLiteLedger
+       provenance + audit + quarantine
+                    │
+                    ▼
+           Versioned JSON artifact
+                    │
+                    ▼
+          Static ReUI research console
 ```
 
----
+The real embedding path uses `sentence-transformers/all-MiniLM-L6-v2` from the immutable revision in `configs/faiss_baseline.json`. It embeds fixed synthetic text and does not measure agent behavior.
 
-## 1. Core Subsystems
+## Backend contract
 
-### 1.1 Memory Backend Adapters (`sentinelmem.backends`)
-Provides a unified abstraction layer over heterogeneous memory stores:
-- **`BaseMemoryBackend`**: Standard interface for ingestion, indexing, and vector similarity retrieval.
-- **`FAISSBackend`**: Local high-performance dense vector index (`IndexFlatIP`, `IndexFlatL2`).
-- **`Mem0Backend`**: Adapter for Mem0 multi-layered memory structures.
-- **`LangMemBackend`**: Adapter for LangGraph/LangChain LangMem memory managers.
+`BaseMemoryBackend` (also exported as `MemoryBackend`) provides `write`, `search`, `delete`, `list`, `export_state`, and `reset`; `add` and `clear` remain compatibility aliases. Public writes stamp source, session ID, agent ID, write timestamp, and SHA-256 content digest. The optional `SQLiteLedger` persists provenance and audit events.
 
-### 1.2 Attack Simulation Harness (`sentinelmem.attacks`)
-Implements reproducible memory poisoning vectors:
-- **`MINJAAttack`**: Memory Injection via Natural Jailbreak (query-only memory injection without direct database write permissions).
-- **`SleeperAttack`**: Delayed-activation memory poisoning designed to lie dormant until triggered by specific query keywords or context states.
-- **`DirectWriteAttack`**: Direct memory payload manipulation for evaluating unconstrained adversarial write models.
+- `FAISSBackend` uses `IndexFlatIP` by default and supports injected embedding providers. The research baseline injects the pinned sentence-transformer model.
+- `EmulatedMem0Backend` and `EmulatedLangMemBackend` are local NumPy-backed fixtures. They do not call the upstream libraries.
 
-### 1.3 Multi-Signal Trust Defense Layer (`sentinelmem.defense`)
-Analyzes retrieved candidate records before they are injected into the agent's prompt context:
-1. **Semantic Drift ($S_{\text{drift}}$):** Evaluates embedding distance and contextual divergence between candidate records and trusted agent profile history.
-2. **Temporal Anomaly ($S_{\text{temp}}$):** Detects sudden ingestion bursts and out-of-band write timestamps.
-3. **Provenance Integrity ($S_{\text{prov}}$):** Verifies the origin chain, session ID, and cryptographic ingress signatures.
-4. **Source Credibility ($S_{\text{cred}}$):** Computes weight based on verified actor role (system, user, external tool, untrusted web fetch).
+## Artifacts and UI
 
-### 1.4 Policy Enforcement Engine (`sentinelmem.defense.engine`)
-Fuses individual trust signals into a composite score:
-$$\text{TrustScore} = w_{\text{drift}} S_{\text{drift}} + w_{\text{temp}} S_{\text{temp}} + w_{\text{prov}} S_{\text{prov}} + w_{\text{cred}} S_{\text{cred}}$$
+`sentinelmem.baseline` writes schema-v2 JSON containing the input config/hash, seed, package versions, source revision and dirty state, embedding identity, corpus summary, deterministic metrics, timings, and per-query retrieval records. Timings are separated because wall-clock latency is environment-dependent.
 
-- **$\text{TrustScore} \ge \theta_{\text{allow}}$:** `ALLOW` $\rightarrow$ Memory injected into prompt.
-- **$\theta_{\text{flag}} \le \text{TrustScore} < \theta_{\text{allow}}$:** `FLAG` $\rightarrow$ Memory injected with security disclaimer and reduced weight.
-- **$\theta_{\text{block}} \le \text{TrustScore} < \theta_{\text{flag}}$:** `QUARANTINE` $\rightarrow$ Memory isolated into quarantine store for human/agent review.
-- **$\text{TrustScore} < \theta_{\text{block}}$:** `BLOCK` $\rightarrow$ Memory dropped immediately from context.
+The ReUI app imports a result artifact at build time. It is a static artifact viewer, not a live API or control plane. The standalone `index.html` demo remains an independent browser-only illustration.
 
-### 1.5 Benchmark & Evaluation Suite (`sentinelmem.evaluation`)
-Measures security and performance metrics:
-- **Attack Success Rate (ASR):** Percentage of poisoned memories successfully injected into prompt context.
-- **Defense Efficacy ($\Delta\text{ASR}$):** Reduction in ASR under SentinelMem policy enforcement.
-- **Benign Utility Preservation (FPR):** Percentage of legitimate memories incorrectly flagged or blocked.
-- **Latency Overhead:** Milliseconds spent during retrieval-time inspection.
+## Persistent storage boundary
+
+SQLite storage supports write provenance, an append-only audit event table with a verifiable hash chain, and persisted quarantine records. It is exercised by tests and `scripts/manual_storage_check.py`. The current `SentinelEngine` does not yet route decisions into the quarantine store or create these audit events automatically; that enforcement/review integration remains in the planned defense sprint.
+
+## Not yet implemented
+
+Real Mem0 and LangMem adapters, agent harnesses, faithful attack paths and success oracles, retrieval-time enforcement, a quarantine review/release workflow, adaptive attacks, matrix orchestration, repeated cross-backend evaluation, ablations, and confidence intervals remain on the project plan in [docs/carry-over.md](carry-over.md).

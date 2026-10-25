@@ -13,10 +13,10 @@ def test_benchmark_run_faiss_minja():
 
 
 def test_benchmark_run_mem0_and_langmem():
-    summary_mem0 = run_experiment(backend_name="mem0", attack_name="minja", top_k=3)
-    assert summary_mem0.backend == "mem0"
+    summary_mem0 = run_experiment(backend_name="emulated_mem0", attack_name="minja", top_k=3)
+    assert summary_mem0.backend == "emulated_mem0"
     assert summary_mem0.unmitigated_asr >= summary_mem0.defended_asr
 
-    summary_langmem = run_experiment(backend_name="langmem", attack_name="sleeper", top_k=3)
-    assert summary_langmem.backend == "langmem"
+    summary_langmem = run_experiment(backend_name="emulated_langmem", attack_name="sleeper", top_k=3)
+    assert summary_langmem.backend == "emulated_langmem"
     assert summary_langmem.unmitigated_asr >= summary_langmem.defended_asr

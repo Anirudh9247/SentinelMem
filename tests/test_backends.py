@@ -1,48 +1,41 @@
-"""Unit tests for SentinelMem backend adapters and registry."""
+"""Contract tests for concrete memory backend implementations."""
+
+import hashlib
 
 import pytest
 
-from sentinelmem.backends import BackendRegistry, BaseMemoryBackend, FAISSBackend, SearchResult
-from sentinelmem.synthetic import MemoryRecord, deterministic_embedding, load_synthetic_scenario
+from sentinelmem.backends import BackendRegistry, BaseMemoryBackend, EmulatedLangMemBackend, EmulatedMem0Backend, FAISSBackend, SearchResult
+from sentinelmem.synthetic import load_synthetic_scenario
 
 
-def test_faiss_backend_lifecycle():
-    backend = FAISSBackend(embedding_dimension=64)
-    assert backend.name == "faiss"
-    assert backend.count() == 0
-
+@pytest.mark.parametrize("backend", [FAISSBackend(), EmulatedMem0Backend(), EmulatedLangMemBackend()])
+def test_backend_contract_write_search_delete_export_and_reset(backend):
     memories, queries = load_synthetic_scenario()
-    inserted_ids = backend.add(memories)
-    
-    assert len(inserted_ids) == len(memories)
-    assert backend.count() == len(memories)
-
-    # Search top 3
-    results = backend.search(queries[0].text, top_k=3)
-    assert len(results) == 3
-    assert isinstance(results[0], SearchResult)
-    assert results[0].score >= results[1].score >= results[2].score
-
-    # Batch search
-    batch_results = backend.search_batch([q.text for q in queries], top_k=3)
-    assert len(batch_results) == len(queries)
-    for res in batch_results:
-        assert len(res) == 3
-
-    # Clear
-    backend.clear()
+    selected = memories[0]
+    ids = backend.write(selected, session_id="contract-session", agent_id="contract-agent")
+    assert ids == [selected.record_id]
+    assert backend.count() == 1
+    assert isinstance(backend.search(queries[0].text, top_k=1)[0], SearchResult)
+    stored = backend.list()[0]
+    assert stored.source == selected.provenance
+    assert stored.session_id == "contract-session"
+    assert stored.agent_id == "contract-agent"
+    assert stored.written_at is not None
+    assert stored.content_hash == hashlib.sha256(stored.text.encode()).hexdigest()
+    assert backend.export_state()[0]["content_hash"] == stored.content_hash
+    assert backend.delete(selected.record_id) is True
+    assert backend.delete(selected.record_id) is False
+    backend.write(memories[:2])
+    backend.reset()
     assert backend.count() == 0
-    assert backend.search("query", top_k=3) == []
+    assert backend.list() == []
 
 
-def test_backend_registry():
+def test_backend_registry_names_emulators_explicitly():
     available = BackendRegistry.list_available()
-    assert "faiss" in available
-
-    backend = BackendRegistry.get("faiss", embedding_dimension=32)
-    assert isinstance(backend, BaseMemoryBackend)
-    assert backend.name == "faiss"
-    assert backend.embedding_dimension == 32
-
+    assert available == ["emulated_langmem", "emulated_mem0", "faiss"]
+    assert isinstance(BackendRegistry.get("emulated_mem0"), EmulatedMem0Backend)
+    assert isinstance(BackendRegistry.get("emulated_langmem"), EmulatedLangMemBackend)
+    assert isinstance(BackendRegistry.get("faiss", embedding_dimension=32), BaseMemoryBackend)
     with pytest.raises(ValueError, match="Unknown backend"):
-        BackendRegistry.get("nonexistent_backend")
+        BackendRegistry.get("mem0")

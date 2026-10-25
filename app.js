@@ -1,6 +1,6 @@
 /**
- * SentinelMem — Security Research & Benchmark Console
- * Interactive evaluation engine for cross-backend memory poisoning defenses.
+ * SentinelMem — Browser-only prototype walkthrough
+ * Illustrates fixed fixtures and heuristic scores; does not call a backend or Python.
  */
 
 // Memory dataset
@@ -57,7 +57,7 @@ let appState = {
   lastExperiment: null
 };
 
-// Trust calculation
+// Illustrative browser-only trust calculation; separate from the Python engine.
 function calculateTrust(record, query) {
   const isPoisoned = record.label === 'instruction_shaped';
   const textLower = record.text.toLowerCase();
@@ -103,20 +103,20 @@ function calculateTrust(record, query) {
   // Policy decision
   let decision = 'ALLOW';
   let passed = true;
-  let reason = 'High trust score across all validation signals.';
+  let reason = 'Fixture scored above the demo allow threshold.';
 
   if (composite < 0.30) {
     decision = 'BLOCK';
     passed = false;
-    reason = 'Critical trust failure: malicious injection markers and untrusted provenance.';
+    reason = 'Fixture scored below the demo block threshold.';
   } else if (composite < 0.50) {
     decision = 'QUARANTINE';
     passed = false;
-    reason = 'Suspicious pattern quarantined for security review.';
+    reason = 'Fixture fell in the demo quarantine score range.';
   } else if (composite < 0.75) {
     decision = 'FLAG';
     passed = true;
-    reason = 'Moderate trust: passed to context with security annotation.';
+    reason = 'Fixture fell in the demo flag score range.';
   }
 
   return {
@@ -131,8 +131,8 @@ function calculateTrust(record, query) {
   };
 }
 
-// Run Experiment Simulation
-function runSecurityExperiment() {
+// Run a client-side fixture simulation; this is not a measured experiment.
+function runDemoSimulation() {
   const backend = appState.backend;
   const attack = appState.attack;
   const topK = appState.topK;
@@ -185,19 +185,18 @@ function runSecurityExperiment() {
     });
   });
 
-  const latency = (performance.now() - startTime) + (backend === 'faiss' ? 1.2 : backend === 'mem0' ? 3.4 : 2.8);
+  const demoRuntimeMs = (performance.now() - startTime).toFixed(2);
   const qLen = queries.length;
 
   const result = {
-    backend,
+    backendLabel: backend,
     attack,
     topK,
     defenseEnabled: defenseOn,
-    unmitigatedASR: (unmitigatedUnsafe / qLen) * 100,
-    defendedASR: (defendedUnsafe / qLen) * 100,
-    efficacy: ((unmitigatedUnsafe - defendedUnsafe) / qLen) * 100,
-    fpr: 0.0,
-    latencyMs: latency.toFixed(2),
+    unfilteredUnsafeQueryPercent: (unmitigatedUnsafe / qLen) * 100,
+    postFilterUnsafeQueryPercent: (defendedUnsafe / qLen) * 100,
+    fixtureDifferencePercent: ((unmitigatedUnsafe - defendedUnsafe) / qLen) * 100,
+    demoRuntimeMs,
     queryCases
   };
 
@@ -210,10 +209,10 @@ function renderExperimentView() {
   if (!exp) return;
 
   // Render Metric Cards
-  document.getElementById('metric-unmitigated-asr').innerText = `${exp.unmitigatedASR.toFixed(1)}%`;
-  document.getElementById('metric-defended-asr').innerText = `${exp.defendedASR.toFixed(1)}%`;
-  document.getElementById('metric-efficacy').innerText = `${exp.efficacy.toFixed(1)}%`;
-  document.getElementById('metric-latency').innerText = `${exp.latencyMs} ms`;
+  document.getElementById('metric-unmitigated-asr').innerText = `${exp.unfilteredUnsafeQueryPercent.toFixed(1)}%`;
+  document.getElementById('metric-defended-asr').innerText = `${exp.postFilterUnsafeQueryPercent.toFixed(1)}%`;
+  document.getElementById('metric-efficacy').innerText = `${exp.fixtureDifferencePercent.toFixed(1)}%`;
+  document.getElementById('metric-latency').innerText = `${exp.demoRuntimeMs} ms`;
 
   // Render Primary Query Inspection (first query case)
   const primaryCase = exp.queryCases[0];
@@ -249,7 +248,7 @@ function renderExperimentView() {
         </td>
         <td class="py-2.5 px-3 text-right">
           <span class="text-[11px] font-semibold ${t.passed ? 'text-emerald-400' : 'text-rose-400'}">
-            ${t.passed ? '✓ Injected' : '✗ Dropped'}
+            ${t.passed ? '✓ Passed in demo' : '✗ Filtered in demo'}
           </span>
         </td>
       </tr>
@@ -273,7 +272,7 @@ function renderExperimentView() {
     document.getElementById('cred-bar').style.width = `${t.sourceCredibility * 100}%`;
 
     document.getElementById('composite-score-val').innerText = t.compositeScore.toFixed(2);
-    document.getElementById('policy-decision-banner').innerText = `${t.decision} (${t.passed ? 'Passed to LLM' : 'Blocked from Prompt'})`;
+    document.getElementById('policy-decision-banner').innerText = `${t.decision} (${t.passed ? 'Passed to simulated context' : 'Filtered from simulated context'})`;
     document.getElementById('policy-reason-text').innerText = t.reason;
   }
 }
@@ -318,5 +317,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Run initial experiment
-  runSecurityExperiment();
+  runDemoSimulation();
 });

@@ -1,0 +1,53 @@
+=== SPRINT 1 EVIDENCE BOUNDARY & SYNTHETIC/EMULATED LABELS REVIEW ===
+Review Date: 2026-10-13
+Scope: Dashboard (ReUI/React), README.md, docs/architecture.md, docs/claims-audit.md, src/sentinelmem/backends/registry.py
+
+1. DASHBOARD (frontend/src/App.tsx and UI screenshot)
+- Synthetic corpus labeling:
+  * Top badge: "Prototype"
+  * Subheading: "Inspect the stored synthetic FAISS retrieval baseline. These results exercise data plumbing; they are not a defense-efficacy benchmark."
+  * Metric card: "Synthetic queries (4)", "Synthetic corpus (12 / 4 untrusted-labelled records)", "Embedding model: 384d (Pinned model · synthetic corpus)"
+  * Chart badge: "Illustrative fixture", with footnote "Environment-specific; not defense overhead"
+- Local emulators labeling:
+  * "Evidence boundary" panel: "Backend scope: FAISS baseline; Mem0 and LangMem entries in this prototype are local emulations, not upstream integrations."
+- Absence of live-agent efficacy:
+  * "Evidence boundary" panel: "Not measured here: defense comparison, repeated runs, LLM/agent behavior, or cross-backend efficacy."
+  * Footer: "UI reads the stored results/faiss_sentence_transformer.json artifact. No live memory service is connected."
+
+2. README (README.md)
+- Synthetic corpus labeling:
+  * Section 1: "SentinelMem explores retrieval-time trust scoring on synthetic memory records. It is a research prototype, not a validated defense for live LLM agents."
+  * Line 7: "A fixed synthetic corpus and a deterministic hash embedding kept as a test fixture."
+  * Line 43: "The model produces 384-dimensional sentence vectors; this is a real embedding model over a synthetic corpus, not an agent or defense evaluation."
+- Local emulators labeling:
+  * Line 13: "Explicitly named local EmulatedMem0Backend and EmulatedLangMemBackend classes. They do not import those upstream products."
+- Absence of live-agent efficacy:
+  * Line 15: "The experiment still has no connected agent, conversation-memory extraction, real Mem0/LangMem integration, calibrated defense, or measured cross-backend efficacy."
+  * Line 53: "The attack classes still insert labelled payloads directly. They do not reproduce MINJA or delayed triggers through an agent loop."
+
+3. ARCHITECTURE (docs/architecture.md)
+- Core positioning:
+  * "SentinelMem is a synthetic research prototype. The only connected vector backend is local FAISS; Mem0 and LangMem remain explicitly named emulations. No LLM agent is connected."
+- Backend taxonomy:
+  * "FAISSBackend uses IndexFlatIP by default and supports injected embedding providers. The research baseline injects the pinned sentence-transformer model."
+  * "EmulatedMem0Backend and EmulatedLangMemBackend are local NumPy-backed fixtures. They do not call the upstream libraries."
+- Non-implemented boundaries:
+  * "Real Mem0 and LangMem adapters, agent harnesses, faithful attack paths and success oracles, retrieval-time enforcement, a quarantine review/release workflow, adaptive attacks, matrix orchestration, repeated cross-backend evaluation, ablations, and confidence intervals remain on the project plan in docs/carry-over.md."
+
+4. CLAIMS AUDIT (docs/claims-audit.md)
+- Tabulated claims vs safe characterization:
+  * FAISS retrieval: Real sentence embeddings for synthetic retrieval plumbing; neither artifact measures agent attack success or defense efficacy.
+  * Mem0/LangMem: Explicit emulations only; no upstream client integration.
+  * Attacks: MINJA, sleeper, and direct-write remain labeled fixture generators, not reproductions.
+  * Defense: Prototype detection decisions plus storage primitives; no integrated persistent mitigation/review workflow or validated effectiveness.
+- Reserved terms:
+  * "Do not claim attack success, real Mem0/LangMem compatibility, cross-backend defense, utility preservation, cryptographic provenance, production quarantine, or latency overhead until those outcomes are directly implemented, measured, and represented by reproducible artifacts."
+
+5. BACKEND REGISTRY (src/sentinelmem/backends/registry.py)
+- Explicit naming:
+  * Registry map keys: "faiss", "emulated_mem0", "emulated_langmem".
+  * Direct aliases or misleading imports to external unverified packages have been eliminated.
+  * Backends are explicitly typed to local implementations (FAISSBackend, EmulatedMem0Backend, EmulatedLangMemBackend).
+
+CONCLUSION:
+PASS: Synthetic corpus, local emulators, and the complete absence of live-agent efficacy remain plainly, prominently, and consistently labeled across all repository documentation, registry code, and user-facing UI surfaces.

@@ -8,7 +8,7 @@ from sentinelmem.models import MemoryRecord, Query
 
 
 class SleeperAttack(BaseAttack):
-    """Simulates delayed-trigger and sleeper poisoning attacks activated only by specific contexts."""
+    """Generates sleeper-labelled records; no delayed activation is implemented."""
 
     @property
     def name(self) -> str:
@@ -16,7 +16,7 @@ class SleeperAttack(BaseAttack):
 
     @property
     def description(self) -> str:
-        return "Dormant memory records that activate malicious tool calls only upon targeted trigger contexts."
+        return "Fixed records containing trigger text and older timestamps for fixture inspection."
 
     def generate_payloads(self) -> list[MemoryRecord]:
         now = time.time()

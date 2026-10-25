@@ -1,4 +1,4 @@
-"""Command-line interface for running SentinelMem security experiments."""
+"""Command-line interface for synthetic SentinelMem prototype simulations."""
 
 from __future__ import annotations
 
@@ -19,19 +19,19 @@ def main() -> None:
             pass
 
     parser = argparse.ArgumentParser(
-        description="SentinelMem: Security evaluation of memory poisoning defenses in LLM agents."
+        description="Run a synthetic retrieval-and-filtering prototype simulation; this is not an agent security evaluation."
     )
     parser.add_argument(
         "--backend",
-        choices=["faiss", "mem0", "langmem"],
+        choices=["faiss", "emulated_mem0", "emulated_langmem"],
         default="faiss",
-        help="Memory backend adapter to evaluate.",
+        help="Prototype backend option (Mem0 and LangMem are local emulations).",
     )
     parser.add_argument(
         "--attack",
         choices=["minja", "sleeper", "direct_write"],
         default="minja",
-        help="Attack vector to simulate.",
+        help="Payload fixture to simulate; these are not faithful attack reproductions.",
     )
     parser.add_argument(
         "--top-k",
@@ -43,12 +43,12 @@ def main() -> None:
         "--output",
         type=Path,
         default=None,
-        help="Optional path to write JSON benchmark results.",
+        help="Optional path to write synthetic simulation output JSON.",
     )
 
     args = parser.parse_args()
 
-    print("\n[SentinelMem] Running Security Evaluation Experiment...")
+    print("\n[SentinelMem] Running synthetic prototype simulation (not an empirical security benchmark)...")
     print(f"   * Backend:  {args.backend.upper()}")
     print(f"   * Attack:   {args.attack.upper()}")
     print(f"   * Top-k:    {args.top_k}")
@@ -59,19 +59,19 @@ def main() -> None:
         top_k=args.top_k,
     )
 
-    print("\n[Benchmark Summary Results]")
-    print("   +---------------------------+--------------+")
-    print(f"   | Unmitigated Baseline ASR  | {summary.unmitigated_asr * 100:>10.1f}% |")
-    print(f"   | Defended SentinelMem ASR  | {summary.defended_asr * 100:>10.1f}% |")
-    print(f"   | Defense Efficacy (dASR)   | {summary.defense_efficacy * 100:>10.1f}% |")
-    print(f"   | False Positive Rate (FPR) | {summary.false_positive_rate * 100:>10.1f}% |")
-    print(f"   | Evaluation Latency        | {summary.latency_ms:>8.2f} ms |")
-    print("   +---------------------------+--------------+\n")
+    print("\n[Synthetic Fixture Summary — Not Research Measurements]")
+    print("   +----------------------------------+--------------+")
+    print(f"   | Unfiltered unsafe-query proxy    | {summary.unmitigated_asr * 100:>10.1f}% |")
+    print(f"   | Post-filter unsafe-query proxy   | {summary.defended_asr * 100:>10.1f}% |")
+    print(f"   | Fixture proportion difference    | {summary.defense_efficacy * 100:>10.1f}% |")
+    print(f"   | Benign candidate rejection       | {summary.false_positive_rate * 100:>10.1f}% |")
+    print(f"   | Prototype loop time              | {summary.latency_ms:>8.2f} ms |")
+    print("   +----------------------------------+--------------+\n")
 
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(summary.to_dict(), indent=2), encoding="utf-8")
-        print(f"[Export] Results successfully written to {args.output}")
+        print(f"[Export] Synthetic simulation output written to {args.output}")
 
 
 if __name__ == "__main__":

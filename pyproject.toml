@@ -14,7 +14,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8,<9"]
+dev = ["pytest>=8,<9", "ruff>=0.13,<1"]
+research = ["sentence-transformers==6.1.0"]
 
 [project.scripts]
 sentinelmem = "sentinelmem.cli:main"
@@ -27,3 +28,8 @@ addopts = "-q"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["F"]

@@ -1,0 +1,29 @@
+﻿=== Run A: python -m sentinelmem.baseline --config configs/faiss_baseline.json --output results/manual-seed-a.json ===
+Wrote schema 2.0 baseline result to results\manual-seed-a.json
+{"query_count": 4, "retrieved_record_count": 12, "top_k": 3, "unsafe_retrieval_count": 1, "unsafe_retrieval_rate": 0.25}
+
+=== Run B: python -m sentinelmem.baseline --config configs/faiss_baseline.json --output results/manual-seed-b.json ===
+Wrote schema 2.0 baseline result to results\manual-seed-b.json
+{"query_count": 4, "retrieved_record_count": 12, "top_k": 3, "unsafe_retrieval_count": 1, "unsafe_retrieval_rate": 0.25}
+
+=== Comparison Script Output ===
+deterministic fields match
+
+=== Comparison Verification Details ===
+Run A metrics: {
+  "query_count": 4,
+  "retrieved_record_count": 12,
+  "top_k": 3,
+  "unsafe_retrieval_count": 1,
+  "unsafe_retrieval_rate": 0.25
+}
+Run B metrics: {
+  "query_count": 4,
+  "retrieved_record_count": 12,
+  "top_k": 3,
+  "unsafe_retrieval_count": 1,
+  "unsafe_retrieval_rate": 0.25
+}
+Metrics equal: True
+Cases count: 4 4
+Cases equal: True

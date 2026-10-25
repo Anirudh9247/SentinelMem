@@ -1,3 +1,6 @@
-"""SentinelMem reproducible benchmark package."""
+"""Public package exports."""
 
-__version__ = "0.1.0"
+from sentinelmem.embeddings import HashEmbedder, SentenceTransformerEmbedder
+from sentinelmem.models import MemoryRecord, Query
+
+__all__ = ["HashEmbedder", "SentenceTransformerEmbedder", "MemoryRecord", "Query"]

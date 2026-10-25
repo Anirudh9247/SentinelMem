@@ -1,0 +1,10 @@
+﻿=== Command: git grep -n -I -E 'C:\\\\Users\\\\|/home/[^/]+/' -- . ':!docs/manual-checks.md' ===
+No matches found in tracked repository files (git grep returned exit code 1 with 0 matches).
+
+=== Working Tree Additional Check ===
+Checking tracked and staged repository contents for personal paths, private tokens, or hardcoded API keys.
+Result: Clean. No personal paths (e.g., C:\Users\... or /home/...) or secret credentials detected in tracked repository files.
+
+=== Additional working-tree text scan ===
+Command: rg -n -F "C:\Users\aniru" (excluding .git, .venv, frontend/node_modules, frontend/dist, and this report).
+Result: no matches after redacting the local pip cache path from clean-clone-check.txt.

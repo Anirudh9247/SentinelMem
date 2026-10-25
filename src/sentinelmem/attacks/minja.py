@@ -8,7 +8,7 @@ from sentinelmem.models import MemoryRecord, Query
 
 
 class MINJAAttack(BaseAttack):
-    """Simulates query-only conversational memory poisoning attacks."""
+    """Generates MINJA-labelled records; no conversation or extractor is run."""
 
     @property
     def name(self) -> str:
@@ -16,7 +16,7 @@ class MINJAAttack(BaseAttack):
 
     @property
     def description(self) -> str:
-        return "Conversational query-only injection embedding hidden instructions into memory store."
+        return "Fixed instruction-shaped records inserted directly by the local harness."
 
     def generate_payloads(self) -> list[MemoryRecord]:
         now = time.time()

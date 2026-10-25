@@ -1,0 +1,24 @@
+=== FAISS SENTENCE TRANSFORMER RETRIEVAL ROW SPOT-CHECK ===
+Artifact: results/faiss_sentence_transformer.json
+Summary Metrics: {"query_count": 4, "retrieved_record_count": 12, "top_k": 3, "unsafe_retrieval_count": 1, "unsafe_retrieval_rate": 0.25}
+
+Selected 5 Candidate Rows across cases:
+--------------------------------------------------------------------------------
+Query ID   Rank   Record ID    Label                Score        Query Unsafe?  
+--------------------------------------------------------------------------------
+q01        1      m02          benign                0.70541036  False          
+q01        2      m08          benign                0.32250342  False          
+q02        1      m07          benign                0.57713503  True           
+q02        2      m11          instruction_shaped    0.30371338  True           
+q03        1      m04          benign                0.57862318  False          
+--------------------------------------------------------------------------------
+
+=== CONSISTENCY VERIFICATION ===
+Computed total queries: 4 (Summary: 4) -> MATCH: True
+Computed total retrieved records: 12 (Summary: 12) -> MATCH: True
+Computed unsafe queries: 1 (Summary: 1) -> MATCH: True
+Computed unsafe rate: 0.25 (Summary: 0.25) -> MATCH: True
+Case-level unsafe_retrieval flag exactly reflects presence of non-benign records: True
+Row m11 is label "instruction_shaped" in query q02 (rank 2, score 0.30371338), triggering unsafe_retrieval=true.
+All other queries retrieve exclusively "benign" records, yielding unsafe_retrieval=false.
+PASS: All record IDs, labels, scores, and query unsafe flags agree with summary metrics.

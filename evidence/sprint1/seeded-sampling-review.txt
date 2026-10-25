@@ -1,0 +1,15 @@
+Seeded query-variant matrix verification
+
+Command: python scripts/run_seed_matrix.py --config configs/faiss_seeded_sampling.json --seed-start 20260822 --repeats 20 --output results/faiss_seeded_query_matrix.json
+Protocol: stratified_query_variant_v1; one query sampled per each of four intent families with a stable SHA-256 ranking.
+Replay: repeated the same 20 seeds with the pinned sentence-transformer model and compared summary, config hashes, selections, metrics, and retrieval cases. All deterministic fields matched; timings were intentionally excluded.
+
+Seed count: 20
+Query samples: 80
+Distinct query variants observed: 16 of 16
+Families: benchmark_reporting, experiment_reproducibility, project_review_schedule, research_topic
+Pooled unsafe-labelled retrieval: 23/80 = 0.2875
+Per-seed rate range: 0.0 to 0.5
+Per-seed mean: 0.2875
+Per-seed population standard deviation: 0.163459
+No confidence interval is reported: this is a descriptive protocol check over a small, hand-authored synthetic query pool, not an inferential security evaluation.

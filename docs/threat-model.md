@@ -1,66 +1,25 @@
-# SentinelMem Threat Model v0.1
+# SentinelMem threat model and scope
 
-## Purpose
+## Intended research question
 
-This document defines the first evaluable scope for SentinelMem: retrieval-time
-protection against untrusted memories that are returned for otherwise benign user
-queries. It is deliberately narrow so results can be reproduced before the
-project expands to multiple backends and defense signals.
+Can retrieval-time trust controls reduce exposure to poisoned memory in LLM agents across memory backends while preserving benign task utility? The current repository does not answer that question yet.
 
-## System under evaluation
+## Current prototype boundary
 
-The system has four components:
+All checked-in scenarios use synthetic text. The FAISS real-embedding run uses a pinned sentence-transformer model locally; the hash fixture remains available. `EmulatedMem0Backend` and `EmulatedLangMemBackend` are local adapters, not the upstream libraries. The ReUI dashboard reads stored JSON and does not connect to a running experiment API.
 
-1. A memory ingestion path that assigns provenance to each record.
-2. A vector retrieval backend that returns the top-*k* memories for a query.
-3. A retrieval-time policy layer, introduced after the baseline.
-4. A reporting layer that saves configuration and metrics with each result.
+The Python simulation inserts attack-labelled records directly and applies rule-based signals. There is no conversation agent, extraction loop, tool execution, or cross-agent memory path. MINJA/sleeper/direct-write are fixture labels and generators, not full attack reproductions. SQLite now offers persistence primitives for provenance, audit events, and quarantine, but the trust engine is not yet wired to enforce or review those records.
 
-The initial baseline exercises only component 2. It uses a deterministic,
-synthetic corpus and does not call an LLM or external service.
+## In scope
 
-## Assets to protect
+- Synthetic memory poisoning scenarios and benign controls.
+- Backend-agnostic retrieval governance as the research design target.
+- Reproducible local experiments with stored configs and results.
 
-- Integrity of retrieved memory context.
-- Correctness of the retrieval-time policy decision.
-- Reproducibility of benchmark inputs, configuration, and outputs.
-- Availability of retrieval within the documented latency budget.
+## Out of scope for the current prototype
 
-## Adversary model
+- External service targets, real user data, and live account credentials.
+- Claims of production safety or protection against adaptive attackers.
+- Evidence of behavior by Mem0, LangMem, LangGraph, or an LLM agent.
 
-For the first benchmark, the adversary may introduce records through an
-untrusted import path. Those records are labelled `instruction_shaped` and carry
-untrusted provenance. The adversary cannot modify the benchmark runner,
-configuration file, trusted records, result files, or the retrieval backend.
-
-The current synthetic scenario intentionally contains neutral placeholders only.
-It validates benchmark plumbing; it is not a reproduction of a production attack
-or a claim about vulnerability of a real backend.
-
-## Security objective and metric
-
-An unsafe retrieval occurs when any top-*k* retrieved record has the unsafe
-label associated with a benign query. The baseline reports:
-
-- unsafe retrieval rate;
-- per-query retrieved identifiers, labels, and similarity scores;
-- retrieval latency; and
-- SHA-256 of the exact configuration file.
-
-The future defense acceptance criterion is set only after the baseline has been
-run and reviewed. It must include both reduction in unsafe retrieval and a
-false-positive/benign-utility measure.
-
-## Out of scope for v0.1
-
-- LLM prompt execution and model alignment claims.
-- Direct-write access to production memory systems.
-- Evaluation against real user memory or personal data.
-- Cross-backend comparisons and claims of generality.
-- Adaptive adversaries that observe defense scores or thresholds.
-
-## Required changes before broader evaluation
-
-Before adding Mem0 or LangMem, document each backend version, ingestion API,
-metadata preservation behavior, embedding model, hardware, and the exact
-authorized attack-evaluation protocol.
+Remaining integration and evaluation work is tracked in [docs/carry-over.md](carry-over.md).

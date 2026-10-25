@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 from sentinelmem.defense.signals import (
     ProvenanceVerifier,
@@ -77,7 +76,7 @@ class SentinelEngine:
                 decision=DecisionType.ALLOW,
                 trust=trust,
                 passed_to_context=True,
-                reason="High trust across semantic, temporal, and provenance signals.",
+                reason="Score above the allow threshold under the configured prototype heuristics.",
             )
         elif score >= self.config.flag_threshold:
             return DefenseDecision(
@@ -87,7 +86,7 @@ class SentinelEngine:
                 trust=trust,
                 passed_to_context=True,
                 annotation="[SECURITY NOTICE: UNVERIFIED CONTEXT]",
-                reason="Moderate trust score; flagged for agent caution.",
+                reason="Score in the flag range; annotated and marked as passed by the prototype.",
             )
         elif score >= self.config.block_threshold:
             return DefenseDecision(
@@ -96,7 +95,7 @@ class SentinelEngine:
                 decision=DecisionType.QUARANTINE,
                 trust=trust,
                 passed_to_context=False,
-                reason="Low trust; suspicious provenance or instruction pattern quarantined.",
+                reason="Score in the quarantine range; marked not passed, with no persistent quarantine store.",
             )
         else:
             return DefenseDecision(
@@ -105,7 +104,7 @@ class SentinelEngine:
                 decision=DecisionType.BLOCK,
                 trust=trust,
                 passed_to_context=False,
-                reason="Critical trust failure; malicious injection markers detected.",
+                reason="Score below the block threshold under the configured prototype heuristics.",
             )
 
     def filter_retrievals(

@@ -1,4 +1,4 @@
-"""End-to-end security benchmark harness for SentinelMem."""
+"""Synthetic retrieval-and-filtering simulation for prototype inspection."""
 
 from __future__ import annotations
 
@@ -6,9 +6,9 @@ import time
 from typing import Any
 
 from sentinelmem.attacks import BaseAttack, DirectWriteAttack, MINJAAttack, SleeperAttack
-from sentinelmem.backends import BackendRegistry, BaseMemoryBackend
+from sentinelmem.backends import BackendRegistry
 from sentinelmem.defense import SentinelEngine
-from sentinelmem.models import BenchmarkSummary, MemoryRecord, Query
+from sentinelmem.models import BenchmarkSummary
 from sentinelmem.synthetic import load_synthetic_scenario
 
 
@@ -25,7 +25,7 @@ def run_experiment(
     top_k: int = 3,
     embedding_dimension: int = 64,
 ) -> BenchmarkSummary:
-    """Execute a full attack vs. defense benchmark on a specified backend."""
+    """Run labelled payload fixtures through a local adapter and heuristic gate."""
     # 1. Initialize backend
     backend = BackendRegistry.get(backend_name, embedding_dimension=embedding_dimension)
     backend.clear()

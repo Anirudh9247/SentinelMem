@@ -1,0 +1,43 @@
+=== Command: python -m sentinelmem.baseline --config configs/faiss_baseline_alt_seed.json --output results/manual-alt-seed.json ===
+Wrote schema 2.0 baseline result to results\manual-alt-seed.json
+{"query_count": 4, "retrieved_record_count": 12, "top_k": 3, "unsafe_retrieval_count": 1, "unsafe_retrieval_rate": 0.25}
+
+=== CONFIGURATION COMPARISON ===
+Alt seed: 20260823
+Baseline seed: 20260822
+
+=== METRICS COMPARISON ===
+Alt metrics:
+{
+  "query_count": 4,
+  "retrieved_record_count": 12,
+  "top_k": 3,
+  "unsafe_retrieval_count": 1,
+  "unsafe_retrieval_rate": 0.25
+}
+
+Baseline metrics:
+{
+  "query_count": 4,
+  "retrieved_record_count": 12,
+  "top_k": 3,
+  "unsafe_retrieval_count": 1,
+  "unsafe_retrieval_rate": 0.25
+}
+
+Metrics identical: True
+
+=== CASES COMPARISON ===
+Alt cases count: 4
+Baseline cases count: 4
+Cases identical: True
+
+=== GATE STATUS & PROTOCOL ANALYSIS ===
+Observed behavior:
+The seed value is explicitly recorded in configuration metadata (configs/faiss_baseline_alt_seed.json specifies seed 20260823 vs 20260822 in faiss_baseline.json), but the Sprint 1 benchmark operates on a fixed deterministic synthetic corpus and queries. Deterministic sentence-transformer inference on identical fixed inputs yields identical metrics.
+
+Sprint prompt expectation:
+The generic sprint prompt anticipates a metric change when varying seeds.
+
+Owner Gate Status:
+This gate remains UNPASSED pending project-owner decision on whether a later experiment should introduce seeded scenario sampling or retain the current fixed-input reproducibility contract without synthetic perturbations. Baseline is intentionally not altered merely to force a score divergence.

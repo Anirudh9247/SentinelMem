@@ -1,6 +1,6 @@
 """Tests for SentinelMem data models."""
 
-from sentinelmem.models import DecisionType, DefenseDecision, MemoryRecord, Query, TrustBreakdown
+from sentinelmem.models import DecisionType, DefenseDecision, MemoryRecord, TrustBreakdown
 
 
 def test_memory_record_creation():

@@ -1,0 +1,13 @@
+{
+  "schema_version": "2.0",
+  "seed": 20260823,
+  "top_k": 3,
+  "scenario": "synthetic_instruction_shaped_memory_v1",
+  "embedding": {
+    "kind": "sentence_transformer",
+    "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "c21050a7ef692090620a6d037dd736908f9c7cf6",
+    "device": "cpu",
+    "local_files_only": false
+  }
+}

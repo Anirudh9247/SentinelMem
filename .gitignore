@@ -11,9 +11,16 @@ build/
 dist/
 *.egg-info/
 
-# Generated experiment outputs (keep the directory itself)
+# Experiment outputs are ignored by default; preserve the reproducible Sprint 1 artifacts
 results/*.json
+results/*.sqlite3
 !results/.gitkeep
+!results/faiss_baseline.json
+!results/faiss_sentence_transformer.json
+!results/faiss_sentence_transformer_repeat.json
+!results/faiss_sentence_transformer_alt_seed.json
+!results/faiss_hash_fixture_v2.json
+!results/faiss_seeded_query_matrix.json
 
 # Local editor and operating-system files
 .vscode/

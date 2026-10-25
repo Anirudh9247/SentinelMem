@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import math
 import re
 import time
-from typing import Any, Callable
+from typing import Callable
 
 import numpy as np
 
@@ -27,7 +26,7 @@ INJECTION_KEYWORDS = [
 
 
 class SemanticDriftDetector:
-    """Evaluates semantic divergence, structural anomalies, and injection marker density."""
+    """Applies fixed marker, prefix, and fixture-label heuristics; no embedding is used."""
 
     def __init__(
         self,
@@ -59,7 +58,7 @@ class SemanticDriftDetector:
 
 
 class TemporalAnomalyDetector:
-    """Evaluates ingestion frequency bursts and timestamp consistency."""
+    """Checks a future timestamp and an explicit fixture metadata flag only."""
 
     def __init__(self, burst_threshold_seconds: float = 60.0) -> None:
         self.burst_threshold_seconds = burst_threshold_seconds
@@ -67,7 +66,6 @@ class TemporalAnomalyDetector:
     def score(self, record: MemoryRecord, query_time: float | None = None) -> float:
         """Return temporal trust score in range [0.0, 1.0]."""
         current = query_time or time.time()
-        age_seconds = abs(current - record.timestamp)
 
         # If memory timestamp is in the future
         if record.timestamp > current + 60.0:
@@ -81,7 +79,7 @@ class TemporalAnomalyDetector:
 
 
 class ProvenanceVerifier:
-    """Verifies origin authority, session lineage, and ingress authenticity."""
+    """Maps provenance labels to fixed scores; no signature or lineage is verified."""
 
     PROVENANCE_WEIGHTS: dict[str, float] = {
         "trusted_profile": 1.00,
@@ -99,7 +97,7 @@ class ProvenanceVerifier:
 
 
 class SourceCredibilityScorer:
-    """Evaluates actor domain authority and metadata integrity."""
+    """Maps selected provenance strings to fixed credibility scores."""
 
     def score(self, record: MemoryRecord) -> float:
         """Return credibility score in range [0.0, 1.0]."""

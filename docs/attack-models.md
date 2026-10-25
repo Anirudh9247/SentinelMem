@@ -1,33 +1,19 @@
-# SentinelMem Attack Models & Threat Taxonomy
+# Attack-labelled fixtures and their limits
 
-This document specifies the memory poisoning attack vectors evaluated within SentinelMem.
+The Python package includes three payload generators named after memory-poisoning scenarios. They provide labelled inputs for plumbing and policy demonstrations; they are not faithful reproductions of published attacks.
 
----
+## MINJA-labelled fixture
 
-## 1. Attack Vectors
+`MINJAAttack` returns four instruction-shaped `MemoryRecord` objects and four related query strings. `run_experiment` inserts the records directly with `backend.add`. There is no adversarial conversation, LLM, automatic memory extraction, or query-only write path. The name indicates the motivating scenario, not a reproduced MINJA attack.
 
-### 1.1 MINJA (Memory Injection via Natural Jailbreak)
-* **Threat Surface:** Query-only conversational input.
-* **Mechanism:** The adversary does not have direct access to database write endpoints. Instead, the attacker crafts a conversational prompt or tool output containing hidden instructions formatted to be extracted by the LLM agent's automatic memory extractor during benign conversation.
-* **Objective:** Force the agent to write a malicious fact or instruction into its long-term memory store.
-* **Evaluation Metric:** Retrieval rate of the injected instruction when a related benign query is issued.
+## Sleeper-labelled fixture
 
-### 1.2 Sleeper / Delayed-Trigger Poisoning
-* **Threat Surface:** Memory ingestion via external tool output, web browsing, or multi-turn dialogue.
-* **Mechanism:** Injected records remain semantically benign or dormant under routine interaction. When a specific trigger token or context occurs, the retrieved memory alters the agent's behavioral trajectory or tool-calling decision.
-* **Objective:** Evade static pattern filters during initial ingestion and activate only upon targeted retrieval.
+`SleeperAttack` returns two instruction-shaped records with trigger text in their content and older timestamps. No trigger state machine activates them, and the current temporal heuristic does not detect their age. This fixture does not evaluate delayed activation or sleeper behavior.
 
-### 1.3 Direct-Write Poisoning (Unconstrained Baseline)
-* **Threat Surface:** Memory storage API with compromised or unauthenticated access.
-* **Mechanism:** Malicious memory records with spoofed metadata and arbitrary embedding vectors are directly inserted into the vector store.
-* **Objective:** Establish the upper bound of attack impact and test defense robustness when ingestion controls fail completely.
+## Direct-write-labelled fixture
 
----
+`DirectWriteAttack` returns two instruction-shaped records, which the harness inserts through the same local backend interface used for other payloads. It does not bypass or exploit an upstream service's access controls and does not establish an upper bound for an external attack.
 
-## 2. Ingestion & Retrieval Attack Matrix
+## Evaluation boundary
 
-| Attack Vector | Ingress Pathway | Adversary Knowledge | Attacker Capability | Target Memory State |
-|---|---|---|---|---|
-| **MINJA** | User Query / Tool Response | Black-Box | Conversational prompt injection | Long-term memory profile |
-| **Sleeper** | Web Scraping / Email Ingress | Black/Gray-Box | Delayed trigger payload | Contextual episodic memory |
-| **Direct-Write** | Storage Endpoint API | White-Box | Direct vector/record insertion | Semantic vector index |
+The current harness measures whether a record with the fixture's unsafe label appears in a retrieved candidate set and whether the local rule-based engine marks it as passed. It does not measure whether an LLM follows the content or whether an attack succeeds in an agent system. A paper or presentation should call these synthetic scenario simulations until attack protocols and systems are independently implemented and documented.

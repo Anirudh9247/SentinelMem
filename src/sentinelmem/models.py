@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+import hashlib
 import time
 from typing import Any
 
@@ -19,14 +20,22 @@ class DecisionType(str, Enum):
 
 @dataclass(frozen=True)
 class MemoryRecord:
-    """Standardized representation of a single memory record."""
+    """Standardized record with optional write-time provenance metadata."""
 
     record_id: str
     text: str
-    label: str = "benign"  # 'benign' or 'instruction_shaped' / 'poisoned'
-    provenance: str = "trusted_profile"  # 'trusted_profile', 'trusted_calendar', 'untrusted_import', etc.
+    label: str = "benign"
+    provenance: str = "trusted_profile"
     timestamp: float = field(default_factory=time.time)
     metadata: dict[str, Any] = field(default_factory=dict)
+    source: str | None = None
+    session_id: str | None = None
+    agent_id: str | None = None
+    written_at: float | None = None
+    content_hash: str | None = None
+
+    def computed_content_hash(self) -> str:
+        return hashlib.sha256(self.text.encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -83,7 +92,7 @@ class DefenseDecision:
 
 @dataclass
 class BenchmarkSummary:
-    """Comprehensive benchmark execution result."""
+    """Synthetic retrieval-and-filtering proxy counters."""
 
     backend: str
     attack: str

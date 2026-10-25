@@ -1,0 +1,17 @@
+{
+  "schema_version": "2.1",
+  "seed": 20260822,
+  "top_k": 3,
+  "scenario": "synthetic_instruction_shaped_memory_query_variants_v1",
+  "sampling": {
+    "protocol": "stratified_query_variant_v1",
+    "variants_per_family": 1
+  },
+  "embedding": {
+    "kind": "sentence_transformer",
+    "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "c21050a7ef692090620a6d037dd736908f9c7cf6",
+    "device": "cpu",
+    "local_files_only": false
+  }
+}

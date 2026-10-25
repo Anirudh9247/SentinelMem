@@ -8,7 +8,7 @@ from sentinelmem.models import MemoryRecord, Query
 
 
 class DirectWriteAttack(BaseAttack):
-    """Simulates unconstrained direct write manipulation of the vector storage backend."""
+    """Generates direct-write-labelled records for insertion into a local adapter."""
 
     @property
     def name(self) -> str:
@@ -16,7 +16,7 @@ class DirectWriteAttack(BaseAttack):
 
     @property
     def description(self) -> str:
-        return "Unconstrained direct vector insertion bypassing standard ingress sanitization."
+        return "Payload records inserted directly by the harness; no external access control is tested."
 
     def generate_payloads(self) -> list[MemoryRecord]:
         now = time.time()

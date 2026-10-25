@@ -1,0 +1,27 @@
+﻿=== Initial Execution: python scripts/manual_storage_check.py --database results/manual_storage_check.sqlite3 ===
+PASS provenance: record=manual-synthetic-check hash=4e5cda7279a7f303b1a83f7993a30c554f9628743a41bd29561bc1287843a8d4
+PASS quarantine: records=1 status=quarantined
+PASS audit chain: events=2 valid=true
+Evidence database: results\manual_storage_check.sqlite3
+
+=== Restart/Reopen Execution: python scripts/manual_storage_check.py --database results/manual_storage_check.sqlite3 ===
+PASS provenance: record=manual-synthetic-check hash=4e5cda7279a7f303b1a83f7993a30c554f9628743a41bd29561bc1287843a8d4
+PASS quarantine: records=1 status=quarantined
+PASS audit chain: events=4 valid=true
+Evidence database: results\manual_storage_check.sqlite3
+
+=== SQLite Database Records Inspection ===
+--- Table: provenance ---
+{'record_id': 'manual-synthetic-check', 'source': 'manual_synthetic_fixture', 'session_id': 'manual-check', 'agent_id': 'owner-review', 'written_at': 1791876238.3734655, 'content_hash': '4e5cda7279a7f303b1a83f7993a30c554f9628743a41bd29561bc1287843a8d4'}
+
+--- Table: quarantine ---
+{'record_id': 'manual-synthetic-check', 'status': 'quarantined', 'created_at': 1791876238.4818163, 'reason': 'Manual persistence check fixture', 'trust_score': 0.5}
+
+--- Table: audit_events (cryptographic hash chain) ---
+{'sequence': 1, 'event_type': 'memory_written', 'timestamp': 1791876236.834313, 'previous_hash': '0000000000000000000000000000000000000000000000000000000000000000', 'event_hash': '70572741a636f8c6c0477bf62e533c451185cb38b842f5a3ad81f6cfaf619f08'}
+{'sequence': 2, 'event_type': 'record_quarantined', 'timestamp': 1791876236.86279, 'previous_hash': '70572741a636f8c6c0477bf62e533c451185cb38b842f5a3ad81f6cfaf619f08', 'event_hash': '33f507f33fa7750ac3f2fd5217450efafae02cb7b8d5f87a40af4d55b79acdcb'}
+{'sequence': 3, 'event_type': 'memory_written', 'timestamp': 1791876238.4034743, 'previous_hash': '33f507f33fa7750ac3f2fd5217450efafae02cb7b8d5f87a40af4d55b79acdcb', 'event_hash': '735b93423f387e4b43d9f0e784adc1331255e9163639a46350e946b444931be5'}
+{'sequence': 4, 'event_type': 'record_quarantined', 'timestamp': 1791876238.506853, 'previous_hash': '735b93423f387e4b43d9f0e784adc1331255e9163639a46350e946b444931be5', 'event_hash': '58d8b459baf8f601ee6f4502b1b540ed1bce911163c31520c8bf4d4ab66ad55a'}
+
+=== Persistence Verification Summary ===
+PASS: source, session_id, agent_id, timestamp (written_at / created_at), content_hash, quarantine record, and cryptographic audit hash chain persist seamlessly across process restarts in results/manual_storage_check.sqlite3.
